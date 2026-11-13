@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Klaten English Community — From Us to Us</title>
+  <meta name="description" content="Event registration and attendance system for Klaten English Community: From Us to Us meetup on Sunday, 29 November.">
+  <meta property="og:title" content="Klaten English Community — From Us to Us">
+  <meta property="og:description" content="Event registration and attendance system for Klaten English Community: From Us to Us meetup on Sunday, 29 November.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="/.netlify/images?url=/img/logo.png&w=600&fm=png">
+  <meta name="theme-color" content="#172a63">
+  <link rel="icon" type="image/png" href="/.netlify/images?url=/img/logo.png&w=64&fm=png">
+  <link rel="apple-touch-icon" href="/.netlify/images?url=/img/logo.png&w=180&fm=png">
+
+  <!-- Google Fonts: Baloo 2 & Nunito -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- QR Generator & Barcode Scanner -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+  <script src="/js/jsQR.js"></script>
+
+  <style>
+    :root {
+      --bg-page: #172a63;
+      --bg-card: #182247;
+      --bg-pill: #3a4f86;
+      --accent-gold: #f4b94a;
+      --dark-ink: #1b2266;
+      --muted: #a9b3d6;
+      --reg-blue: #5b9bf0;
+      --link-blue: #6ea8ff;
+      --empty-seat: #1e2a68;
+      --empty-border: #2e3e78;
+      --color-error: #ffb4b4;
+      --color-success: #7be0a0;
+      --cream-warning: #fbefc8;
+      --brown-warning: #422300;
+      --font-display: 'Baloo 2', system-ui, sans-serif;
+      --font-body: 'Nunito', system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body {
+      background-color: var(--bg-page);
+      color: #ffffff;
+      font-family: var(--font-body);
+      min-height: 100vh;
+      overflow-x: hidden;
+      padding-top: calc(16px + env(safe-area-inset-top));
+      padding-bottom: calc(32px + env(safe-area-inset-bottom));
+      padding-left: calc(16px + env(safe-area-inset-left));
+      padding-right: calc(16px + env(safe-area-inset-right));
+    }
+    .app-container { width: 100%; max-width: 520px; margin: 0 auto; position: relative; }
+    .admin-pill-btn {
+      position: fixed; top: calc(16px + env(safe-area-inset-top)); right: calc(16px + env(safe-area-inset-right));
+      z-index: 100; background-color: var(--bg-pill); color: #ffffff; font-family: var(--font-display);
+      font-weight: 700; font-size: 14px; padding: 7px 18px; border-radius: 9999px;
+      border: 1px solid rgba(255,255,255,0.12); cursor: pointer; text-decoration: none;
+    }
+    .screen { display: none; }
+    .screen.active { display: block; }
+    .card {
+      background-color: var(--bg-card); border-radius: 34px; padding: 26px 22px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); margin-bottom: 20px;
+    }
+    .btn-gold {
+      background-color: var(--accent-gold); color: var(--dark-ink); font-family: var(--font-display);
+      font-weight: 800; font-size: 19px; width: 100%; padding: 15px 24px; border-radius: 9999px;
+      border: none; cursor: pointer; text-align: center; display: block; text-decoration: none;
+    }
+    .btn-gold:disabled { opacity: 0.55; cursor: not-allowed; pointer-events: none; }
+    .date-badge {
+      background-color: var(--accent-gold); color: var(--dark-ink); width: 76px; border-radius: 18px;
+      padding: 8px 4px; text-align: center; font-family: var(--font-display); font-weight: 800;
+    }
+    .date-badge-month { font-size: 13px; line-height: 1; }
+    .date-badge-day { font-size: 34px; line-height: 1; margin: 2px 0; }
+    .gold-text { color: var(--accent-gold); }
+    .muted-text { color: var(--muted); }
+    .nav-back-row { margin-bottom: 16px; }
+    .btn-back {
+      background: none; border: none; color: var(--muted); font-size: 16px; font-weight: 700;
+      cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-body);
+    }
+    .event-info-row { display: flex; align-items: center; gap: 12px; margin-top: 14px; font-size: 15.5px; font-weight: 600; }
+    .divider { border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 24px 0; }
+    .rundown-item { display: flex; gap: 14px; margin-bottom: 16px; }
+    .rundown-num {
+      width: 32px; height: 32px; border-radius: 50%; background-color: var(--accent-gold);
+      color: var(--dark-ink); font-family: var(--font-display); font-weight: 800; font-size: 16px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .rundown-content h4 { font-family: var(--font-display); font-size: 17px; font-weight: 700; }
+    .rundown-content p { color: var(--muted); font-size: 14px; margin-top: 2px; line-height: 1.4; }
+    .seats-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px; }
+    .seats-count-big { font-family: var(--font-display); font-weight: 800; font-size: 36px; line-height: 1; }
+    .seats-status-text { font-family: var(--font-display); font-weight: 800; font-size: 17px; }
+    .seats-status-open { color: #ffffff; }
+    .seats-status-full { color: var(--color-error); }
+    .seats-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin: 16px 0 12px 0; }
+    .seat-circle { width: 100%; aspect-ratio: 1 / 1; border-radius: 50%; }
+    .seat-empty { background-color: var(--empty-seat); border: 1.5px solid var(--empty-border); }
+    .seat-registered { background-color: var(--reg-blue); border: 1.5px solid var(--reg-blue); }
+    .seat-checkedin { background-color: var(--accent-gold); border: 1.5px solid var(--accent-gold); }
+    .seats-legend { display: flex; gap: 20px; font-size: 13.5px; color: var(--muted); margin-bottom: 24px; }
+    .legend-item { display: flex; align-items: center; gap: 8px; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .app-input {
+      width: 100%; background-color: rgba(255,255,255,0.06); border: 1.5px solid rgba(255,255,255,0.18);
+      border-radius: 9999px; padding: 14px 20px; color: #ffffff; font-size: 16px; outline: none; margin-bottom: 16px;
+    }
+    .ticket-card {
+      background-color: var(--bg-card); border-radius: 28px; padding: 24px 20px; border-top: 6px solid var(--accent-gold);
+      box-shadow: 0 12px 36px rgba(0,0,0,0.4); text-align: center;
+    }
+    .qr-box {
+      background: #ffffff; border-radius: 20px; padding: 18px; margin: 18px auto; width: 280px; height: 280px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .qr-box svg { width: 100%; height: 100%; display: block; }
+    .ticket-code-display { font-family: var(--font-display); font-weight: 800; font-size: 34px; letter-spacing: 0.12em; color: var(--accent-gold); }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <button id="adminTopBtn" class="admin-pill-btn" onclick="handleAdminPillClick()">Admin</button>
+
+    <!-- 1. HOME SCREEN -->
+    <div id="screen-home" class="screen active">
+      <div style="text-align: center; padding: 20px 0 10px 0;">
+        <img id="homeLogoImg" alt="Klaten English Community — From Us to Us" width="168" height="168" src="/.netlify/images?url=/img/logo.png&w=336&fm=webp" style="width: 168px; height: 168px; border-radius: 50%; object-fit: cover; border: 4px solid var(--accent-gold); background: #ffffff; box-shadow: 0 10px 30px rgba(0,0,0,0.35);">
+        <div style="margin-top: 14px;"><span style="background: var(--bg-pill); color: #fff; padding: 6px 16px; border-radius: 9999px; font-size: 13.5px; font-weight: 700;">Klaten English Community</span></div>
+        <h1 style="font-family: var(--font-display); font-size: 36px; font-weight: 800; line-height: 1.15; margin-top: 14px;">Let's learn English <span class="gold-text">together!</span></h1>
+        <p class="muted-text" style="font-size: 16px; margin-top: 8px;">Free, friendly meetups in Klaten. Come as you are.</p>
+        <div style="display: flex; justify-content: center; gap: 8px; margin-top: 18px; flex-wrap: wrap;">
+          <div style="background: var(--bg-pill); padding: 6px 14px; border-radius: 9999px; font-size: 13.5px; font-weight: 600;"><span class="gold-text">1.</span> Register</div>
+          <div style="background: var(--bg-pill); padding: 6px 14px; border-radius: 9999px; font-size: 13.5px; font-weight: 600;"><span class="gold-text">2.</span> Get your QR ticket</div>
+          <div style="background: var(--bg-pill); padding: 6px 14px; border-radius: 9999px; font-size: 13.5px; font-weight: 600;"><span class="gold-text">3.</span> Show it at the door</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 16px;">
+        <div class="date-badge"><div class="date-badge-month">SUN</div><div class="date-badge-day">29</div><div class="date-badge-month">NOV</div></div>
+        <h2 style="font-size: 26px; margin-top: 16px;">From Us to Us</h2>
+        <p class="muted-text" style="font-size: 14.5px; margin-top: 4px;">Better English · Deeper Connections · A Stronger Us</p>
+        <div class="event-info-row"><span>⏰</span> <span>Sunday, 29 November · 09.00 AM</span></div>
+        <div class="event-info-row"><span>📍</span> <span>Jendela Hub (2nd Floor)</span></div>
+        <div class="event-info-row"><span>🗺️</span> <a href="https://maps.app.goo.gl/fWsW1VWc95LHVPsg7?g_st=ic" target="_blank" style="color: var(--link-blue); text-decoration: underline;">Open in Google Maps</a></div>
+        <div class="event-info-row"><span>📷</span> <a href="https://www.instagram.com/englishcommunityinklaten?srtk=MWdoM2pzYm42eGljZQ%3D%3D&utm_source=qr" target="_blank" style="color: var(--link-blue); text-decoration: underline;">@englishcommunityinklaten</a></div>
+        <hr class="divider">
+        <h3 style="font-size: 20px; font-weight: 800;">Rundown</h3>
+        <p class="muted-text" style="font-size: 14px; margin: 4px 0 16px 0;">This time we focus on speaking: fewer activities, more meaningful conversations.</p>
+        <div class="rundown-item"><div class="rundown-num">1</div><div class="rundown-content"><h4>Opening</h4><p>Say hi and warm up together.</p></div></div>
+        <div class="rundown-item"><div class="rundown-num">2</div><div class="rundown-content"><h4>English game</h4><p>A fun warm-up game before the main activity.</p></div></div>
+        <div class="rundown-item"><div class="rundown-num">3</div><div class="rundown-content"><h4>Group discussion</h4><p>Discuss a topic in small groups, then share your ideas with everyone.</p></div></div>
+        <div class="rundown-item"><div class="rundown-num">4</div><div class="rundown-content"><h4>Closing & Memories</h4><p>Ending the session with smiles, good memories, and a group photo.</p></div></div>
+        <hr class="divider">
+        <div class="seats-header"><div><span id="seatsTakenNum" class="seats-count-big">0</span><span class="muted-text" style="font-size: 15px; margin-left: 4px;">of 35 seats taken</span></div><div id="seatsStatusText" class="seats-status-text seats-status-open">Seats are open</div></div>
+        <div id="seatsGrid" class="seats-grid"></div>
+        <div class="seats-legend"><div class="legend-item"><div class="legend-dot" style="background: var(--reg-blue);"></div><span>Registered</span></div><div class="legend-item"><div class="legend-dot" style="background: var(--accent-gold);"></div><span>Checked in</span></div></div>
+        <button id="saveSeatBtn" class="btn-gold" onclick="handleSaveSeatClick()">Save a seat</button>
+        <p class="muted-text" style="font-size: 13.5px; text-align: center; margin-top: 12px;">Free. You'll get a QR ticket to show at the entrance.</p>
+      </div>
+      <div style="text-align: center; padding: 16px 0; font-size: 14px;"><a href="https://wa.me/6285726801206" target="_blank" style="color: var(--link-blue); text-decoration: underline;">Chat with us on WhatsApp</a></div>
+    </div>
+
+    <!-- 2. REGISTRATION SCREEN -->
+    <div id="screen-form" class="screen">
+      <div class="nav-back-row"><button class="btn-back" onclick="goToHome()">← Back</button></div>
+      <div class="card">
+        <h2 style="font-size: 26px;">Save a seat</h2>
+        <p class="muted-text" style="font-size: 14.5px; margin-top: 4px;">Free. You'll get a QR ticket to show at the entrance.</p>
+        <p style="color: var(--accent-gold); font-size: 13.5px; font-weight: 700; margin-top: 8px;">Note: registration and cancellation can only be done once.</p>
+        <form id="regForm" onsubmit="handleRegistrationSubmit(event)" style="margin-top: 20px;">
+          <input type="text" id="regName" class="app-input" placeholder="Full name *" required>
+          <input type="tel" id="regPhone" class="app-input" placeholder="WhatsApp number (08xxxxxxxxxx) *" required>
+          <label style="display: flex; gap: 12px; margin-bottom: 20px; cursor: pointer; font-size: 14px; line-height: 1.45;">
+            <input type="checkbox" id="regCommit" required style="width: 20px; height: 20px; margin-top: 2px;">
+            <span>I commit to attending <strong>From Us to Us</strong> on Sunday, 29 November at 09.00 AM. If I can't make it, I'll tell the organizers so someone else can take my seat.</span>
+          </label>
+          <div id="formErrorBox" style="display: none; background: rgba(255,180,180,0.15); border: 1px solid var(--color-error); color: var(--color-error); padding: 12px; border-radius: 12px; margin-bottom: 16px; font-size: 14px;"></div>
+          <button type="submit" id="submitRegBtn" class="btn-gold">Get my QR ticket</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- 3. TICKET SCREEN -->
+    <div id="screen-ticket" class="screen">
+      <div class="nav-back-row"><button class="btn-back" onclick="goToHome()">← Home</button></div>
+      <div class="ticket-card">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px;">
+          <img id="ticketLogoImg" alt="" width="32" height="32" src="/.netlify/images?url=/img/logo.png&w=64&fm=webp" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: #fff;">
+          <span style="font-weight: 800; font-size: 14px;">Klaten English Community</span>
+        </div>
+        <div style="background: var(--accent-gold); color: var(--dark-ink); display: inline-block; padding: 4px 14px; border-radius: 9999px; font-size: 12px; font-weight: 800; text-transform: uppercase;">Admit one</div>
+        <h2 id="ticketName" style="font-size: 26px; font-weight: 800; margin-top: 12px;">Participant Name</h2>
+        <div style="color: var(--accent-gold); font-size: 18px; font-weight: 800;">From Us to Us</div>
+        <div class="muted-text" style="font-size: 14px; margin-top: 4px;">Sunday, 29 November · 09.00 AM · Jendela Hub (2nd Floor)</div>
+        <hr class="divider" style="border-top: 2px dashed rgba(255,255,255,0.2);">
+        <div class="qr-box"><div id="ticketQrWrapper"></div></div>
+        <div id="ticketCode" class="ticket-code-display">KEC123</div>
+        <div class="muted-text" style="font-size: 13px;">Show this QR code at the door</div>
+      </div>
+      <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 12px;">
+        <button class="btn-gold" onclick="downloadTicketImage()">Save ticket image</button>
+        <button id="btnCancelTicket" onclick="handleCancelClick()" style="background: none; border: none; color: var(--color-error); text-decoration: underline; font-size: 14px; cursor: pointer;">Cancel registration</button>
+      </div>
+    </div>
+
+    <!-- 4. ADMIN LOGIN & SCANNER SCREEN -->
+    <div id="screen-admin-login" class="screen">
+      <div class="nav-back-row"><button class="btn-back" onclick="goToHome()">← Back</button></div>
+      <div class="card">
+        <h2 style="font-size: 26px;">Admin Access</h2>
+        <p class="muted-text" style="font-size: 14px; margin-bottom: 20px;">Scan QR codes and manage attendance.</p>
+        <input type="tel" id="adminPhone" class="app-input" placeholder="Admin phone number">
+        <input type="password" id="adminPass" class="app-input" placeholder="Password" onkeydown="if(event.key==='Enter')handleAdminLogin()">
+        <div id="adminLoginError" style="display: none; color: var(--color-error); margin-bottom: 14px; font-size: 14px;"></div>
+        <button class="btn-gold" onclick="handleAdminLogin()">Log in</button>
+      </div>
+    </div>
+
+    <div id="screen-admin-dashboard" class="screen">
+      <div class="nav-back-row"><button class="btn-back" onclick="handleAdminBack()">← Logout / Back</button></div>
+      <div class="card">
+        <h2 style="font-size: 24px;">Door Attendance</h2>
+        <div style="display: flex; gap: 12px; margin: 16px 0;">
+          <div style="flex: 1; background: rgba(255,255,255,0.06); padding: 12px; border-radius: 16px; text-align: center;">
+            <div id="adminStatRegistered" style="font-size: 28px; font-weight: 800;">0</div>
+            <div class="muted-text" style="font-size: 12px;">Registered</div>
+          </div>
+          <div style="flex: 1; background: rgba(255,255,255,0.06); padding: 12px; border-radius: 16px; text-align: center;">
+            <div id="adminStatCheckedIn" style="font-size: 28px; font-weight: 800; color: var(--accent-gold);">0</div>
+            <div class="muted-text" style="font-size: 12px;">Checked in</div>
+          </div>
+        </div>
+        <button id="btnStartScan" class="btn-gold" onclick="toggleCameraScanner()">Scan QR with Camera</button>
+        <div id="cameraError" style="display: none; color: var(--color-error); margin-top: 12px; font-size: 14px;"></div>
+        <div id="cameraScannerBox" style="display: none; margin-top: 14px; border-radius: 18px; overflow: hidden; background: #000; position: relative;">
+          <video id="scanVideo" style="width: 100%; height: 280px; object-fit: cover; display: block;" playsinline muted autoplay></video>
+          <div style="position: absolute; top: 50%; left: 50%; width: 190px; height: 190px; transform: translate(-50%, -50%); border: 3px solid var(--accent-gold); border-radius: 16px; box-shadow: 0 0 0 9999px rgba(0,0,0,0.35); pointer-events: none;"></div>
+          <div id="scanHint" style="position: absolute; bottom: 10px; left: 0; right: 0; text-align: center; color: #fff; font-size: 13px; font-weight: 600; text-shadow: 0 1px 3px #000;">Point the camera at the QR ticket</div>
+        </div>
+        <div style="margin-top: 20px;">
+          <input type="text" id="manualCodeInput" class="app-input" placeholder="Or enter 6-digit code" style="text-transform: uppercase;">
+          <button class="btn-gold" onclick="handleManualCheckIn()" style="font-size: 16px; padding: 12px;">Check in</button>
+        </div>
+        <div id="scanFeedback" style="margin-top: 14px; padding: 12px; border-radius: 12px; display: none; font-size: 15px; font-weight: 700; text-align: center;"></div>
+      </div>
+      <div class="card">
+        <h3 style="font-size: 20px; margin-bottom: 12px;">Registered Guests</h3>
+        <div id="adminGuestsList" style="display: flex; flex-direction: column; gap: 10px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <canvas id="offscreenTicketCanvas" width="900" height="1400" style="display: none;"></canvas>
+  <canvas id="qrScanCanvas" style="display: none;"></canvas>
+
+  <script>
+    // Backend: Netlify Function at /api (see netlify/functions/api.ts)
+    var API_URL = "/api";
+    var WA_NUMBER = "6285726801206";
+
+    // Application State
+    var currentScreen = "screen-home";
+    var seatsData = { registered: 0, checkedIn: 0, total: 35 };
+    var activeTicket = null;
+    var adminToken = null;
+    var scanStream = null;
+
+    var LOGO_URL = "/.netlify/images?url=/img/logo.png&w=320&fm=png";
+    function escapeHtml(v) { return String(v == null ? "" : v).replace(/[&<>"']/g, function(c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+    function safeStorageGet(k) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch(e) { return null; } }
+    function safeStorageSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) {} }
+
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+      var el = document.getElementById(id);
+      if (el) el.classList.add('active');
+      currentScreen = id;
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+
+    function goToHome() { showScreen('screen-home'); updateSaveSeatButton(); fetchSeats(); }
+
+    function updateSaveSeatButton() {
+      var btn = document.getElementById('saveSeatBtn');
+      if (!btn) return;
+      var stored = safeStorageGet('kec_ticket');
+      var hasRegistered = Boolean(stored && stored.code && !stored.cancelled && stored.status !== 'cancelled');
+
+      if (hasRegistered) {
+        btn.textContent = "View the ticket";
+        btn.disabled = false;
+        btn.style.opacity = "1";
+        btn.style.pointerEvents = "auto";
+      } else if (seatsData.registered >= (seatsData.total || 35)) {
+        btn.textContent = "Full";
+        btn.disabled = true;
+        btn.style.opacity = "0.55";
+        btn.style.pointerEvents = "none";
+      } else {
+        btn.textContent = "Save a seat";
+        btn.disabled = false;
+        btn.style.opacity = "1";
+        btn.style.pointerEvents = "auto";
+      }
+    }
+
+    function handleSaveSeatClick() {
+      var stored = safeStorageGet('kec_ticket');
+      var hasRegistered = Boolean(stored && stored.code && !stored.cancelled && stored.status !== 'cancelled');
+      if (hasRegistered) {
+        activeTicket = stored;
+        renderTicketScreen(stored);
+        showScreen('screen-ticket');
+        return;
+      }
+      if (seatsData.registered >= (seatsData.total || 35)) return;
+      showScreen('screen-form');
+    }
+
+    function callBackend(payload) {
+      return fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      }).then(function(res) { return res.json(); }).catch(function() {
+        return { ok: false, error: "Network error. Please check your connection." };
+      });
+    }
+    function fetchSeats() {
+      callBackend({ action: "seats" }).then(function(res) {
+        if (res && res.ok) {
+          seatsData = res;
+          renderSeatsGrid(res.registered, res.checkedIn);
+        }
+      });
+    }
+
+    function renderSeatsGrid(registeredCount, checkedInCount) {
+      var grid = document.getElementById('seatsGrid');
+      grid.innerHTML = '';
+      var total = seatsData.total || 35;
+      var chk = Math.min(checkedInCount, total);
+      var reg = Math.min(registeredCount - checkedInCount, total - chk);
+
+      for (var i = 0; i < total; i++) {
+        var circle = document.createElement('div');
+        circle.className = 'seat-circle ' + (i < chk ? 'seat-checkedin' : (i < chk + reg ? 'seat-registered' : 'seat-empty'));
+        grid.appendChild(circle);
+      }
+      document.getElementById('seatsTakenNum').textContent = registeredCount;
+      var statusEl = document.getElementById('seatsStatusText');
+      if (registeredCount >= total) {
+        statusEl.textContent = 'Seats are full';
+        statusEl.className = 'seats-status-text seats-status-full';
+      } else {
+        statusEl.textContent = 'Seats are open';
+        statusEl.className = 'seats-status-text seats-status-open';
+      }
+      updateSaveSeatButton();
+    }
+
+    function handleRegistrationSubmit(e) {
+      e.preventDefault();
+      var name = document.getElementById('regName').value.trim();
+      var phone = document.getElementById('regPhone').value.trim();
+      var btn = document.getElementById('submitRegBtn');
+      document.getElementById('formErrorBox').style.display = 'none';
+      btn.disabled = true; btn.textContent = "Processing...";
+
+      callBackend({ action: "register", name: name, phone: phone }).then(function(res) {
+        btn.disabled = false; btn.textContent = "Get my QR ticket";
+        if (res.ok) {
+          activeTicket = { code: res.code, name: name, phone: phone, cancelled: false };
+          safeStorageSet('kec_ticket', activeTicket);
+          renderTicketScreen(activeTicket);
+          showScreen('screen-ticket');
+          fetchSeats();
+        } else {
+          var err = document.getElementById('formErrorBox');
+          err.style.display = 'block';
+          err.textContent = res.message || res.error || "Could not register.";
+        }
+      });
+    }
+
+    function renderTicketScreen(ticket) {
+      document.getElementById('ticketName').textContent = ticket.name;
+      document.getElementById('ticketCode').textContent = ticket.code;
+      var qr = qrcode(0, 'M');
+      qr.addData("KEC|" + ticket.code + "|" + ticket.name + "|" + ticket.phone);
+      qr.make();
+      document.getElementById('ticketQrWrapper').innerHTML = qr.createSvgTag(6, 4);
+    }
+
+    function handleCancelClick() {
+      if (!confirm("Are you sure you want to cancel your seat? This cannot be undone.")) return;
+      callBackend({ action: "cancel", phone: activeTicket.phone, code: activeTicket.code }).then(function(res) {
+        if (!res.ok) { alert(res.error || "Could not cancel."); return; }
+        activeTicket.cancelled = true;
+        safeStorageSet('kec_ticket', activeTicket);
+        alert("Registration cancelled.");
+        goToHome();
+      });
+    }
+
+    function downloadTicketImage() {
+      var canvas = document.getElementById('offscreenTicketCanvas');
+      var ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#172a63'; ctx.fillRect(0, 0, 900, 1400);
+      ctx.fillStyle = '#182247'; ctx.beginPath(); ctx.roundRect(50, 60, 800, 1280, 40); ctx.fill();
+      ctx.fillStyle = '#f4b94a'; ctx.fillRect(50, 60, 800, 16);
+      ctx.fillStyle = '#ffffff'; ctx.font = 'bold 44px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(activeTicket.name, 450, 240);
+      ctx.fillStyle = '#f4b94a'; ctx.font = 'bold 28px sans-serif';
+      ctx.fillText('ADMIT ONE', 450, 160);
+      ctx.fillStyle = '#f4b94a'; ctx.font = 'bold 36px sans-serif';
+      ctx.fillText('From Us to Us', 450, 310);
+      ctx.fillStyle = '#a9b3d6'; ctx.font = '24px sans-serif';
+      ctx.fillText('Sunday, 29 November · 09.00 AM · Jendela Hub', 450, 360);
+
+      var qrImg = new Image();
+      var qrSvg = document.getElementById('ticketQrWrapper').querySelector('svg');
+      var svgData = new XMLSerializer().serializeToString(qrSvg);
+      qrImg.src = 'data:image/svg+xml;base64,' + btoa(svgData);
+      qrImg.onload = function() {
+        ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.roundRect(175, 440, 550, 550, 30); ctx.fill();
+        ctx.drawImage(qrImg, 200, 465, 500, 500);
+        ctx.fillStyle = '#f4b94a'; ctx.font = 'bold 64px monospace';
+        ctx.fillText(activeTicket.code, 450, 1100);
+        ctx.fillStyle = '#a9b3d6'; ctx.font = '24px sans-serif';
+        ctx.fillText('Show this QR code at the door', 450, 1150);
+        var logo = new Image();
+        logo.onload = function() {
+          ctx.save(); ctx.beginPath(); ctx.arc(450, 1235, 70, 0, Math.PI * 2); ctx.closePath(); ctx.clip();
+          ctx.fillStyle = '#ffffff'; ctx.fillRect(380, 1165, 140, 140);
+          ctx.drawImage(logo, 380, 1165, 140, 140); ctx.restore();
+          saveCanvas();
+        };
+        logo.onerror = saveCanvas;
+        logo.src = LOGO_URL;
+      };
+      function saveCanvas() {
+        var link = document.createElement('a');
+        link.download = 'KEC-ticket-' + activeTicket.code + '.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      }
+    }
+
+    function handleAdminPillClick() {
+      if (adminToken) { showScreen('screen-admin-dashboard'); loadAdminList(); }
+      else { showScreen('screen-admin-login'); }
+    }
+    function handleAdminBack() {
+      if (adminToken) callBackend({ action: "logout", token: adminToken });
+      adminToken = null; try { sessionStorage.removeItem('kec_admin_token'); } catch(e) {}
+      stopCamera(); goToHome();
+    }
+
+    function handleAdminLogin() {
+      var p = document.getElementById('adminPhone').value;
+      var pass = document.getElementById('adminPass').value;
+      callBackend({ action: "login", phone: p, password: pass }).then(function(res) {
+        if (res.ok) {
+          adminToken = res.token;
+          try { sessionStorage.setItem('kec_admin_token', res.token); } catch(e) {}
+          document.getElementById('adminLoginError').style.display = 'none';
+          document.getElementById('adminPass').value = '';
+          showScreen('screen-admin-dashboard');
+          loadAdminList();
+        } else {
+          var err = document.getElementById('adminLoginError');
+          err.style.display = 'block'; err.textContent = res.error || "Wrong login.";
+        }
+      });
+    }
+
+    function loadAdminList() {
+      callBackend({ action: "list", token: adminToken }).then(function(res) {
+        if (!res.ok) {
+          if (res.error === 'Unauthorized') {
+            adminToken = null; try { sessionStorage.removeItem('kec_admin_token'); } catch(e) {}
+            stopCamera(); showScreen('screen-admin-login');
+          }
+          return;
+        }
+        document.getElementById('adminStatRegistered').textContent = res.registered;
+        document.getElementById('adminStatCheckedIn').textContent = res.checkedIn;
+        var container = document.getElementById('adminGuestsList');
+        container.innerHTML = '';
+        if (!res.list.length) {
+          container.innerHTML = '<p class="muted-text" style="font-size:14px;">No registrations yet.</p>';
+          return;
+        }
+        res.list.forEach(function(item) {
+          var cancelled = item.status === 'cancelled';
+          var row = document.createElement('div');
+          row.style.cssText = 'background: rgba(255,255,255,0.05); padding: 12px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px;' + (cancelled ? ' opacity: 0.5;' : '');
+          row.innerHTML = '<div style="min-width:0;"><strong>' + escapeHtml(item.name) + '</strong> <span style="color:var(--accent-gold); font-size:12px;">(' + escapeHtml(item.code) + ')</span><div style="font-size:12px; color:var(--muted);">' + escapeHtml(item.phone) + (cancelled ? ' · cancelled' : '') + '</div></div>';
+          if (!cancelled) {
+            var btn = document.createElement('button');
+            btn.style.cssText = 'padding:6px 12px; border-radius:9999px; border:none; font-weight:700; cursor:pointer; flex-shrink:0; background:' + (item.checkedIn ? 'var(--accent-gold)' : 'var(--bg-pill)') + '; color:' + (item.checkedIn ? 'var(--dark-ink)' : '#fff') + ';';
+            btn.textContent = item.checkedIn ? 'Checked in' : 'Present';
+            btn.title = item.checkedIn ? 'Tap to undo check-in' : 'Tap to mark as present';
+            btn.onclick = function() {
+              if (item.checkedIn && !confirm('Undo check-in for ' + item.name + '?')) return;
+              btn.disabled = true;
+              callBackend({ action: "setcheck", token: adminToken, code: item.code, value: !item.checkedIn }).then(function() { loadAdminList(); });
+            };
+            row.appendChild(btn);
+          }
+          container.appendChild(row);
+        });
+      });
+    }
+    var scanDetector = null;
+    var scanBusy = false;
+    var lastScanCode = '';
+    var lastScanTime = 0;
+    var lastScanFrame = 0;
+
+    function toggleCameraScanner() {
+      var box = document.getElementById('cameraScannerBox');
+      if (!scanStream && box.style.display === 'none') {
+        var camErr = document.getElementById('cameraError');
+        camErr.style.display = 'none';
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          camErr.style.display = 'block';
+          camErr.textContent = window.isSecureContext === false
+            ? 'Camera needs a secure (https) connection. Enter the code manually.'
+            : 'Camera is not available on this device. Enter the code manually.';
+          return;
+        }
+        if (typeof jsQR !== 'function' && !('BarcodeDetector' in window)) {
+          camErr.style.display = 'block'; camErr.textContent = 'QR scanner failed to load. Refresh the page or enter the code manually.';
+          return;
+        }
+        box.style.display = 'block';
+        document.getElementById('btnStartScan').textContent = 'Stop camera';
+        setupDetector();
+        navigator.mediaDevices.getUserMedia({
+          audio: false,
+          video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
+        }).then(function(stream) {
+          scanStream = stream;
+          var video = document.getElementById('scanVideo');
+          video.setAttribute('playsinline', 'true');
+          video.muted = true;
+          video.srcObject = stream;
+          var p = video.play();
+          if (p && p.catch) p.catch(function(){});
+          requestAnimationFrame(scanTick);
+        }).catch(function(err) {
+          stopCamera();
+          camErr.style.display = 'block';
+          camErr.textContent = (err && err.name === 'NotAllowedError')
+            ? 'Camera permission was denied. Allow camera access in your browser settings or enter the code manually.'
+            : 'Could not access the camera. Allow camera permission or enter the code manually.';
+        });
+      } else {
+        stopCamera();
+      }
+    }
+
+    function setupDetector() {
+      if (scanDetector || !('BarcodeDetector' in window)) return;
+      try {
+        if (BarcodeDetector.getSupportedFormats) {
+          BarcodeDetector.getSupportedFormats().then(function(formats) {
+            if (formats.indexOf('qr_code') !== -1) scanDetector = new BarcodeDetector({ formats: ['qr_code'] });
+          }).catch(function(){});
+        } else {
+          scanDetector = new BarcodeDetector({ formats: ['qr_code'] });
+        }
+      } catch (e) { scanDetector = null; }
+    }
+
+    function stopCamera() {
+      if (scanStream) { scanStream.getTracks().forEach(function(t){ t.stop(); }); scanStream = null; }
+      var video = document.getElementById('scanVideo');
+      if (video) video.srcObject = null;
+      scanBusy = false;
+      document.getElementById('cameraScannerBox').style.display = 'none';
+      document.getElementById('btnStartScan').textContent = 'Scan QR with Camera';
+    }
+
+    function handleScanResult(text) {
+      if (!text) return false;
+      text = String(text).trim();
+      var parts = text.split('|');
+      var ticketCode = (parts.length > 1 && parts[0] === 'KEC') ? parts[1] : text;
+      ticketCode = ticketCode.trim().toUpperCase();
+      var now = Date.now();
+      // Ignore the same ticket being seen again in the next few seconds
+      if (ticketCode === lastScanCode && now - lastScanTime < 4000) return true;
+      lastScanCode = ticketCode; lastScanTime = now;
+      if (navigator.vibrate) { try { navigator.vibrate(120); } catch (e) {} }
+      submitCheckIn(ticketCode);
+      return true;
+    }
+
+    function scanWithJsQR(video) {
+      if (typeof jsQR !== 'function') return null;
+      var canvas = document.getElementById('qrScanCanvas');
+      // Downscale large frames so decoding stays fast on phones
+      var vw = video.videoWidth, vh = video.videoHeight;
+      var scale = Math.min(1, 800 / Math.max(vw, vh));
+      var w = Math.round(vw * scale), h = Math.round(vh * scale);
+      if (canvas.width !== w) canvas.width = w;
+      if (canvas.height !== h) canvas.height = h;
+      var ctx = canvas.getContext('2d', { willReadFrequently: true });
+      ctx.drawImage(video, 0, 0, w, h);
+      var imgData = ctx.getImageData(0, 0, w, h);
+      var code = jsQR(imgData.data, w, h, { inversionAttempts: 'attemptBoth' });
+      return code && code.data ? code.data : null;
+    }
+
+    function scanTick(ts) {
+      if (!scanStream) return;
+      var video = document.getElementById('scanVideo');
+      // Scan roughly 8 times per second to save battery
+      if (!scanBusy && video.readyState >= video.HAVE_CURRENT_DATA && video.videoWidth > 0 && (!ts || ts - lastScanFrame > 120)) {
+        lastScanFrame = ts || 0;
+        if (scanDetector) {
+          scanBusy = true;
+          scanDetector.detect(video).then(function(codes) {
+            scanBusy = false;
+            if (codes && codes.length && codes[0].rawValue) handleScanResult(codes[0].rawValue);
+          }).catch(function() {
+            scanBusy = false;
+            scanDetector = null; // fall back to jsQR
+          });
+        } else {
+          try {
+            var data = scanWithJsQR(video);
+            if (data) handleScanResult(data);
+          } catch (e) {}
+        }
+      }
+      requestAnimationFrame(scanTick);
+    }
+
+    function handleManualCheckIn() {
+      var code = document.getElementById('manualCodeInput').value.trim();
+      if (code) submitCheckIn(code);
+    }
+
+    function submitCheckIn(code) {
+      callBackend({ action: "checkin", token: adminToken, code: code }).then(function(res) {
+        var fb = document.getElementById('scanFeedback');
+        fb.style.display = 'block';
+        if (res.ok) {
+          fb.style.background = 'rgba(123,224,160,0.2)'; fb.style.color = 'var(--color-success)';
+          fb.textContent = 'Verified: ' + (res.name || code) + ' is checked in!';
+        } else {
+          fb.style.background = 'rgba(255,180,180,0.2)'; fb.style.color = 'var(--color-error)';
+          fb.textContent = res.error === 'already' ? (res.name || code) + ' is already checked in!'
+            : res.error === 'cancelled' ? 'This ticket was cancelled.'
+            : res.error === 'Unauthorized' ? 'Session expired. Please log in again.'
+            : 'Ticket not found.';
+        }
+        document.getElementById('manualCodeInput').value = '';
+        loadAdminList();
+      });
+    }
+
+    // Initialize state
+    window.addEventListener('DOMContentLoaded', function() {
+      try { adminToken = sessionStorage.getItem('kec_admin_token'); } catch(e) {}
+      var saved = safeStorageGet('kec_ticket');
+      if (saved && saved.code) {
+        activeTicket = saved; updateSaveSeatButton();
+        // Sync the stored ticket with the server (e.g. cancelled elsewhere)
+        if (!saved.cancelled) {
+          callBackend({ action: "mine", phone: saved.phone, code: saved.code }).then(function(res) {
+            if (res && res.ok && res.status === 'cancelled') {
+              saved.cancelled = true; saved.status = 'cancelled';
+              safeStorageSet('kec_ticket', saved); updateSaveSeatButton();
+            }
+          });
+        }
+      }
+      fetchSeats();
+    });
+  </script>
+</body>
+</html>
